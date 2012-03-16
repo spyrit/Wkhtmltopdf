@@ -22,6 +22,7 @@ class Wkhtmltopdf
     protected $_grayscale = false;
     protected $_title = null;
     protected $_path;               // path to directory where to place files
+    protected $_fileOutput;
     protected $_footerHtml;
     protected $_username;
     protected $_password;
@@ -30,7 +31,7 @@ class Wkhtmltopdf
     /**
      * path to executable
      */
-    protected $_bin = '/usr/bin/wkhtmltopdf';
+    protected $_bin = '/opt/wkhtmltopdf/wkhtmltopdf';
     protected $_filename = null;                // filename in $path directory
 
     /**
@@ -156,7 +157,7 @@ class Wkhtmltopdf
     protected function _exec($cmd, $input = "")
     {
         $result = array('stdout' => '', 'stderr' => '', 'return' => '');
-
+        
         $proc = proc_open($cmd, array(0 => array('pipe', 'r'), 1 => array('pipe', 'w'), 2 => array('pipe', 'w')), $pipes);
         fwrite($pipes[0], $input);
         fclose($pipes[0]);
@@ -559,7 +560,7 @@ class Wkhtmltopdf
 
         $command .= ' --title "' . $this->getTitle() . '"';
         $command .= ' "%input%"';
-        $command .= " -";
+        $command .= ' "%output%"';
 
         return $command;
     }
@@ -583,13 +584,15 @@ class Wkhtmltopdf
             $input = $this->getFilePath();
         }
 
-        $content = $this->_exec(str_replace('%input%', $input, $this->_getCommand()));
-
+        $content = $this->_exec(str_replace(array('%input%','%output%'), array($input,$this->_path.$this->_fileOutput), $this->_getCommand()));
+        
+        var_dump(str_replace(array('%input%','%output%'), array($input,$this->_path.$this->_fileOutput), $this->_getCommand()));
+        
         if (strpos(mb_strtolower($content['stderr']), 'error'))
                 throw new Exception("System error <pre>" . $content['stderr'] . "</pre>");
 
-        if (mb_strlen($content['stdout'], 'utf-8') === 0)
-               throw new Exception("WKHTMLTOPDF didn't return any data");
+        //if (mb_strlen($content['stdout'], 'utf-8') === 0)
+        //       throw new Exception("WKHTMLTOPDF didn't return any data");
 
         if ((int)$content['return'] > 1)
             throw new Exception("Shell error, return code: " . (int)$content['return']);
@@ -604,6 +607,7 @@ class Wkhtmltopdf
      */
     public function output($mode, $filename)
     {
+        $this->_fileOutput = (string)$filename;
         switch ($mode) {
             case self::MODE_DOWNLOAD:
                 if (!headers_sent()) {
