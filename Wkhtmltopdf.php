@@ -275,30 +275,6 @@ class Wkhtmltopdf
         return $this->_html;
     }
 
-	/**
-     * set URL to render
-     *
-     * @author Charles SANQUER
-     * @param string $html
-     * @return Wkthmltopdf
-     */
-    public function setUrl($url)
-    {
-        $this->_url = (string) $url;
-        return $this;
-    }
-
-    /**
-     * returns URL
-     *
-     * @author Charles SANQUER
-     * @return string
-     */
-    public function getUrl()
-    {
-        return $this->_url;
-    }
-    
     /**
      * set URL to render
      *
